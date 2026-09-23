@@ -139,7 +139,7 @@ jobs:
             echo "src-git passwall_packages https://github.com/Openwrt-Passwall/openwrt-passwall-packages" >> feeds.conf.default
           fi
 
-          # Only add Nikki when the build requests it; other profiles stay unchanged.
+          # Add the current Nikki feed only when requested; its commit is recorded in Packages-*.txt.
           if [[ "$WRT_PACKAGE" == *"CONFIG_PACKAGE_nikki=y"* || "$WRT_PACKAGE" == *"CONFIG_PACKAGE_luci-app-nikki=y"* ]]; then
             echo "src-git nikki https://github.com/nikkinikki-org/OpenWrt-nikki.git;main" >> feeds.conf.default
           fi
@@ -220,6 +220,9 @@ jobs:
           if [[ "$WRT_PROFILE" == "PLUS" && -e ../feeds/passwall_packages/.git ]]; then
             echo "passwall_packages(feed) Openwrt-Passwall/openwrt-passwall-packages main $(git -C ../feeds/passwall_packages rev-parse --short HEAD)" >> "$GITHUB_WORKSPACE/package-versions.txt"
           fi
+          if [[ "$WRT_PACKAGE" == *"CONFIG_PACKAGE_nikki=y"* || "$WRT_PACKAGE" == *"CONFIG_PACKAGE_luci-app-nikki=y"* ]]; then
+            echo "nikki(feed) nikkinikki-org/OpenWrt-nikki main $(git -C ../feeds/nikki rev-parse --short HEAD)" >> "$GITHUB_WORKSPACE/package-versions.txt"
+          fi
           if [ -s "$GITHUB_WORKSPACE/package-versions.txt" ]; then
             {
               echo 'WRT_PKG_INFO<<EOF'
@@ -245,7 +248,7 @@ jobs:
           make defconfig -j$(nproc)
 
           # Kconfig can silently remove unknown or incompatible packages.
-          for PACKAGE in nikki luci-app-nikki luci-i18n-nikki-zh-cn adguardhome luci-app-adguardhome; do
+          for PACKAGE in nikki luci-app-nikki luci-i18n-nikki-zh-cn mihomo-meta zerotier luci-app-zerotier adguardhome luci-app-adguardhome; do
             if [[ "$WRT_PACKAGE" == *"CONFIG_PACKAGE_${PACKAGE}=y"* ]]; then
               grep -Fqx "CONFIG_PACKAGE_${PACKAGE}=y" .config || {
                 echo "Requested package ${PACKAGE} is missing from the final .config" >&2
