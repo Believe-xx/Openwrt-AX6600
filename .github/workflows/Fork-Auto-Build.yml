@@ -1,0 +1,67 @@
+name: Fork Auto Build
+
+on:
+  schedule:
+    # Check upstream daily at 06:17 China Standard Time (UTC+8).
+    - cron: '17 22 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fork-auto-build
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Sync upstream
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.merge.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Merge upstream changes
+        id: merge
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote add upstream https://github.com/ones20250/Openwrt-AX6600.git
+          git fetch --no-tags upstream main
+          if git merge-base --is-ancestor upstream/main HEAD; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Already up to date with upstream"
+          else
+            git merge --no-edit upstream/main
+            git push origin HEAD:main
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  build:
+    name: Build RE-CS-02 with AdGuardHome and Nikki
+    needs: sync
+    if: needs.sync.outputs.changed == 'true' || github.event_name == 'workflow_dispatch'
+    uses: ./.github/workflows/WRT-CORE.yml
+    with:
+      WRT_CONFIG: IPQ60XX-WIFI-YES
+      WRT_THEME: bootstrap
+      WRT_NAME: OWRT
+      WRT_SSID: OWRT
+      WRT_WORD: '12345678'
+      WRT_IP: 192.168.100.1
+      WRT_PW: 无
+      WRT_REPO: https://github.com/ones20250/immortalwrt_ipq.git
+      WRT_BRANCH: main
+      WRT_SOURCE: ones20250/immortalwrt_ipq
+      WRT_CHECKOUT_REF: main
+      WRT_PROFILE: PURE
+      WRT_TEST: 'false'
+      # Existing Config files stay untouched; Settings.sh appends these at build time.
+      WRT_PACKAGE: 'CONFIG_PACKAGE_adguardhome=y\nCONFIG_PACKAGE_luci-app-adguardhome=y\nCONFIG_PACKAGE_nikki=y\nCONFIG_PACKAGE_luci-app-nikki=y\nCONFIG_PACKAGE_luci-i18n-nikki-zh-cn=y\nCONFIG_PACKAGE_mihomo-meta=y\nCONFIG_PACKAGE_kmod-dummy=y'

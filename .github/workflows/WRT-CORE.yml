@@ -37,6 +37,9 @@ on:
       WRT_PACKAGE:
         required: false
         type: string
+      WRT_CHECKOUT_REF:
+        required: false
+        type: string
       WRT_PROFILE:
         required: false
         type: string
@@ -73,6 +76,8 @@ jobs:
     steps:
       - name: Checkout Projects
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.WRT_CHECKOUT_REF || github.sha }}
 
       - name: Initialization Environment
         env:
@@ -132,6 +137,11 @@ jobs:
           # LuCI 插件本体由 Packages.sh 克隆到 package/，这里不再加 LuCI feed，避免同名包双重定义。
           if [[ "$WRT_PROFILE" == "PLUS" ]]; then
             echo "src-git passwall_packages https://github.com/Openwrt-Passwall/openwrt-passwall-packages" >> feeds.conf.default
+          fi
+
+          # Only add Nikki when the build requests it; other profiles stay unchanged.
+          if [[ "$WRT_PACKAGE" == *"CONFIG_PACKAGE_nikki=y"* || "$WRT_PACKAGE" == *"CONFIG_PACKAGE_luci-app-nikki=y"* ]]; then
+            echo "src-git nikki https://github.com/nikkinikki-org/OpenWrt-nikki.git;main" >> feeds.conf.default
           fi
 
       - name: Check Scripts
@@ -232,7 +242,18 @@ jobs:
 
           $GITHUB_WORKSPACE/Scripts/Settings.sh
 
-          make defconfig -j$(nproc) && make clean -j$(nproc)
+          make defconfig -j$(nproc)
+
+          # Kconfig can silently remove unknown or incompatible packages.
+          for PACKAGE in nikki luci-app-nikki luci-i18n-nikki-zh-cn adguardhome luci-app-adguardhome; do
+            if [[ "$WRT_PACKAGE" == *"CONFIG_PACKAGE_${PACKAGE}=y"* ]]; then
+              grep -Fqx "CONFIG_PACKAGE_${PACKAGE}=y" .config || {
+                echo "Requested package ${PACKAGE} is missing from the final .config" >&2
+                exit 1
+              }
+            fi
+          done
+          make clean -j$(nproc)
 
       - name: Download Packages
         if: env.WRT_TEST != 'true'
