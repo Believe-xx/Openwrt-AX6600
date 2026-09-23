@@ -45,7 +45,7 @@ jobs:
           fi
 
   build:
-    name: Build RE-CS-02 with AdGuardHome and Nikki
+    name: Build RE-CS-02 with AdGuardHome, ZeroTier and Nikki
     needs: sync
     if: needs.sync.outputs.changed == 'true' || github.event_name == 'workflow_dispatch'
     uses: ./.github/workflows/WRT-CORE.yml
@@ -64,4 +64,4 @@ jobs:
       WRT_PROFILE: PURE
       WRT_TEST: 'false'
       # Existing Config files stay untouched; Settings.sh appends these at build time.
-      WRT_PACKAGE: 'CONFIG_PACKAGE_adguardhome=y\nCONFIG_PACKAGE_luci-app-adguardhome=y\nCONFIG_PACKAGE_nikki=y\nCONFIG_PACKAGE_luci-app-nikki=y\nCONFIG_PACKAGE_luci-i18n-nikki-zh-cn=y\nCONFIG_PACKAGE_mihomo-meta=y\nCONFIG_PACKAGE_kmod-dummy=y'
+      WRT_PACKAGE: 'CONFIG_PACKAGE_adguardhome=y\nCONFIG_PACKAGE_luci-app-adguardhome=y\nCONFIG_PACKAGE_nikki=y\nCONFIG_PACKAGE_luci-app-nikki=y\nCONFIG_PACKAGE_luci-i18n-nikki-zh-cn=y\nCONFIG_PACKAGE_mihomo-meta=y\nCONFIG_PACKAGE_kmod-dummy=y\nCONFIG_PACKAGE_zerotier=y\nCONFIG_PACKAGE_luci-app-zerotier=y'
