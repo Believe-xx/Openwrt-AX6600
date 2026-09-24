@@ -45,13 +45,13 @@ jobs:
           fi
 
   build:
-    name: Build RE-CS-02 with AdGuardHome, ZeroTier and Nikki
+    name: Build RE-CS-02 with custom services and Liquid theme
     needs: sync
     if: needs.sync.outputs.changed == 'true' || github.event_name == 'workflow_dispatch'
     uses: ./.github/workflows/WRT-CORE.yml
     with:
       WRT_CONFIG: IPQ60XX-WIFI-YES
-      WRT_THEME: bootstrap
+      WRT_THEME: liquid
       WRT_NAME: OWRT
       WRT_SSID: OWRT
       WRT_WORD: '12345678'
@@ -64,4 +64,35 @@ jobs:
       WRT_PROFILE: PURE
       WRT_TEST: 'false'
       # Existing Config files stay untouched; Settings.sh appends these at build time.
-      WRT_PACKAGE: 'CONFIG_PACKAGE_adguardhome=y\nCONFIG_PACKAGE_luci-app-adguardhome=y\nCONFIG_PACKAGE_nikki=y\nCONFIG_PACKAGE_luci-app-nikki=y\nCONFIG_PACKAGE_luci-i18n-nikki-zh-cn=y\nCONFIG_PACKAGE_mihomo-meta=y\nCONFIG_PACKAGE_kmod-dummy=y\nCONFIG_PACKAGE_zerotier=y\nCONFIG_PACKAGE_luci-app-zerotier=y'
+      WRT_PACKAGE: |
+        CONFIG_PACKAGE_adguardhome=y
+        CONFIG_PACKAGE_luci-app-adguardhome=y
+        CONFIG_PACKAGE_nikki=y
+        CONFIG_PACKAGE_luci-app-nikki=y
+        CONFIG_PACKAGE_luci-i18n-nikki-zh-cn=y
+        CONFIG_PACKAGE_mihomo-meta=y
+        CONFIG_PACKAGE_kmod-dummy=y
+        CONFIG_PACKAGE_zerotier=y
+        CONFIG_PACKAGE_luci-app-zerotier=y
+        CONFIG_PACKAGE_luci-app-dockerman=y
+        CONFIG_PACKAGE_dockerd=y
+        CONFIG_PACKAGE_docker=y
+        CONFIG_PACKAGE_docker-compose=y
+        CONFIG_PACKAGE_luci-lib-docker=y
+        CONFIG_PACKAGE_cgroupfs-mount=y
+        CONFIG_PACKAGE_tini=y
+        CONFIG_PACKAGE_kmod-veth=y
+        CONFIG_PACKAGE_kmod-ikconfig=y
+        CONFIG_PACKAGE_kmod-nf-ipvs=y
+        CONFIG_PACKAGE_kmod-nf-nat=y
+        CONFIG_PACKAGE_kmod-nf-nat6=y
+        CONFIG_PACKAGE_kmod-nft-nat=y
+        CONFIG_PACKAGE_kmod-nft-offload=y
+        CONFIG_PACKAGE_kmod-nft-compat=y
+        CONFIG_PACKAGE_kmod-nft-fullcone=y
+        CONFIG_PACKAGE_luci-app-ttyd=y
+        CONFIG_PACKAGE_luci-app-wolplus=n
+        CONFIG_PACKAGE_luci-app-wolultra=y
+        CONFIG_PACKAGE_vlmcsd=y
+        CONFIG_PACKAGE_luci-app-vlmcsd=y
+        CONFIG_PACKAGE_luci-theme-liquid=y
