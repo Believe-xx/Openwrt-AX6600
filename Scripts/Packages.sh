@@ -61,6 +61,19 @@ UPDATE_PACKAGE() {
 #UPDATE_PACKAGE "homeproxy" "ones20250/homeproxy" "master"
 #UPDATE_PACKAGE "momo" "nikkinikki-org/OpenWrt-momo" "main"
 #UPDATE_PACKAGE "nikki" "nikkinikki-org/OpenWrt-nikki" "main"
+# In PURE, clone only the requested modern Wake-on-LAN package. PLUS already
+# clones ones20250/packages below, so do not introduce a second package definition.
+if [[ "${WRT_PROFILE^^}" != "PLUS" && "$WRT_PACKAGE" == *"CONFIG_PACKAGE_luci-app-wolultra=y"* ]]; then
+	UPDATE_PACKAGE "luci-app-wolultra" "ones20250/packages" "main" "pkg"
+	[ -f ./luci-app-wolultra/Makefile ] || { echo "luci-app-wolultra source missing" >&2; exit 1; }
+fi
+
+# Keep the requested Liquid theme on the current upstream commit for each build.
+if [[ "$WRT_PACKAGE" == *"CONFIG_PACKAGE_luci-theme-liquid=y"* ]]; then
+	UPDATE_PACKAGE "luci-theme-liquid" "zzsj0928/luci-theme-liquid" "main"
+	[ -f ./luci-theme-liquid/Makefile ] || { echo "luci-theme-liquid source missing" >&2; exit 1; }
+fi
+
 if [[ "${WRT_PROFILE^^}" == "PLUS" ]]; then
 	# LuCI 入口随 "pkg" 通配一并提取，依赖包（xray、sing-box、geodata 等）
 	# 由 passwall_packages feed 提供，避免同名包双重定义。
