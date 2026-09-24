@@ -248,7 +248,7 @@ jobs:
           make defconfig -j$(nproc)
 
           # Kconfig can silently remove unknown or incompatible packages.
-          for PACKAGE in nikki luci-app-nikki luci-i18n-nikki-zh-cn mihomo-meta zerotier luci-app-zerotier adguardhome luci-app-adguardhome; do
+          for PACKAGE in nikki luci-app-nikki luci-i18n-nikki-zh-cn mihomo-meta zerotier luci-app-zerotier adguardhome luci-app-adguardhome dockerd docker docker-compose luci-app-dockerman luci-app-ttyd luci-app-wolultra vlmcsd luci-app-vlmcsd luci-theme-liquid; do
             if [[ "$WRT_PACKAGE" == *"CONFIG_PACKAGE_${PACKAGE}=y"* ]]; then
               grep -Fqx "CONFIG_PACKAGE_${PACKAGE}=y" .config || {
                 echo "Requested package ${PACKAGE} is missing from the final .config" >&2
